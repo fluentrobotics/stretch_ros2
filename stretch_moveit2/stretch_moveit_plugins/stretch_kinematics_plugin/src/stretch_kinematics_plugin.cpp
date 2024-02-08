@@ -1,7 +1,7 @@
 #include <stretch_kinematics_plugin/stretch_kinematics_plugin.h>
 
 #include <tf2/transform_datatypes.h>
-#include <tf2_eigen/tf2_eigen.h>
+#include <tf2_eigen/tf2_eigen.hpp>
 
 namespace stretch_kinematics_plugin
 {
@@ -171,7 +171,7 @@ bool StretchKinematicsPlugin::searchPositionIK(const geometry_msgs::msg::Pose& i
 
   if (ik_seed_state.size() != dimension_)
   {
-    RCLCPP_ERROR(LOGGER, "Seed state must have size %d instead of size %d\n", dimension_, ik_seed_state.size());
+    RCLCPP_ERROR(LOGGER, "Seed state must have size %d instead of size %ld\n", dimension_, ik_seed_state.size());
     error_code.val = moveit_msgs::msg::MoveItErrorCodes::NO_IK_SOLUTION;
     return false;
   }
@@ -182,7 +182,7 @@ bool StretchKinematicsPlugin::searchPositionIK(const geometry_msgs::msg::Pose& i
     {
       RCLCPP_ERROR(LOGGER,
                    "Consistency limits must be empty or have size %d instead "
-                   "of size %d\n",
+                   "of size %ld\n",
                    dimension_, consistency_limits.size());
       error_code.val = moveit_msgs::msg::MoveItErrorCodes::NO_IK_SOLUTION;
       return false;

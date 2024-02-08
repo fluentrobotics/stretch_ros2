@@ -1,6 +1,8 @@
 #include <moveit/robot_model_loader/robot_model_loader.h>
 #include <moveit/robot_model/robot_model.h>
 #include <moveit/robot_state/robot_state.h>
+#include <moveit/rdf_loader/rdf_loader.h>
+#include <moveit/kinematics_plugin_loader/kinematics_plugin_loader.h>
 
 int main(int argc, char** argv)
 {
@@ -45,6 +47,10 @@ int main(int argc, char** argv)
   moveit::core::RobotStatePtr robot_state(new moveit::core::RobotState(kinematic_model));
   robot_state->setToDefaultValues();
   const moveit::core::JointModelGroup* joint_model_group = kinematic_model->getJointModelGroup("mobile_base_arm");
+  
+  auto solver_data = joint_model_group->getGroupKinematics();
+  moveit::core::JointModelGroup::KinematicsSolver solver = solver_data.first;
+  RCLCPP_INFO(LOGGER, "solver: %s", solver.solver_instance_ ? "true" : "false");
 
   const std::vector<std::string>& joint_names = joint_model_group->getVariableNames();
 

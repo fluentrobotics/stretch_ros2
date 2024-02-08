@@ -260,46 +260,55 @@ ompl:
 
 
 plan_request_params:
-  planning_attempts: 1
+  # planning_attempts: 1
+  planning_attempts: 5
   planning_pipeline: ompl
   max_velocity_scaling_factor: 1.0
   max_acceleration_scaling_factor: 1.0
 
 ompl_rrtc:  # Namespace for individual plan request
   plan_request_params:  # PlanRequestParameters similar to the ones that are used by the single pipeline planning of moveit_cpp
-    planning_attempts: 1  # Number of attempts the planning pipeline tries to solve a given motion planning problem
+    # planning_attempts: 1  # Number of attempts the planning pipeline tries to solve a given motion planning problem
+    planning_attempts: 5  # Number of attempts the planning pipeline tries to solve a given motion planning problem
     planning_pipeline: ompl  # Name of the pipeline that is being used
     planner_id: "RRTConnectkConfigDefault"  # Name of the specific planner to be used by the pipeline
     max_velocity_scaling_factor: 1.0  # Velocity scaling parameter for the trajectory generation algorithm that is called (if configured) after the path planning
     max_acceleration_scaling_factor: 1.0  # Acceleration scaling parameter for the trajectory generation algorithm that is called (if configured) after the path planning
-    planning_time: 3.0  # Time budget for the motion plan request. If the planning problem cannot be solved within this time, an empty solution with error code is returned
+    # planning_time: 3.0  # Time budget for the motion plan request. If the planning problem cannot be solved within this time, an empty solution with error code is returned
+    planning_time: 10.0  # Time budget for the motion plan request. If the planning problem cannot be solved within this time, an empty solution with error code is returned
 
 pilz_lin:
   plan_request_params:
-    planning_attempts: 1
+    # planning_attempts: 1
+    planning_attempts: 5
     planning_pipeline: pilz_industrial_motion_planner
     planner_id: "PTP"
     max_velocity_scaling_factor: 1.0
     max_acceleration_scaling_factor: 1.0
-    planning_time: 0.8
+    # planning_time: 0.8
+    planning_time: 10.0
 
 chomp:
   plan_request_params:
-    planning_attempts: 1
+    # planning_attempts: 1
+    planning_attempts: 5
     planning_pipeline: chomp
     max_velocity_scaling_factor: 1.0
     max_acceleration_scaling_factor: 1.0
-    planning_time: 1.5
+    # planning_time: 1.5
+    planning_time: 10.0
 
 # Second OMPL pipeline
 ompl_rrt_star:
   plan_request_params:
-    planning_attempts: 1
+    # planning_attempts: 1
+    planning_attempts: 5
     planning_pipeline: ompl_rrt_star # Different OMPL pipeline name!
     planner_id: "RRTstarkConfigDefault"
     max_velocity_scaling_factor: 1.0
     max_acceleration_scaling_factor: 1.0
-    planning_time: 1.5
+    # planning_time: 1.5
+    planning_time: 10.0
 
 moveit_controller_manager: stretch_simple_controller_manager/MoveItSimpleControllerManager
 
@@ -350,7 +359,8 @@ robot_description_kinematics:
   mobile_base_arm:
     kinematics_solver: stretch_kinematics_plugin/StretchKinematicsPlugin
     kinematics_solver_search_resolution: 0.005
-    kinematics_solver_timeout: 0.1
+    # kinematics_solver_timeout: 0.1
+    kinematics_solver_timeout: 5.0
   stretch_head:
     kinematics_solver: kdl_kinematics_plugin/KDLKinematicsPlugin
     kinematics_solver_search_resolution: 0.005
