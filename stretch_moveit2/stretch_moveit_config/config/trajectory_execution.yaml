@@ -12,7 +12,7 @@
             allowed_goal_duration_margin: 1.0
             # Allowed joint-value tolerance for validation that trajectory's first point matches current robot state
             # TODO: investigate separate allowed start tolerances for dynamixel and stepper joints
-            allowed_start_tolerance: 0.03
+            allowed_start_tolerance: 0.05
         stretch_simple_controller_manager:
             controller_names:
               - stretch_controller

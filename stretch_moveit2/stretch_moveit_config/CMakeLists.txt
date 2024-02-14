@@ -144,6 +144,7 @@ install(PROGRAMS
   scripts/moveit2_planning.py
   scripts/moveit2_model_groups.py
   scripts/test_control.py
+  scripts/ik.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
