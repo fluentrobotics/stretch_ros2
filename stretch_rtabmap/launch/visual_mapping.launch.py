@@ -35,13 +35,16 @@ def generate_launch_description():
             ('rgb/camera_info', '/camera/color/camera_info'),
             ('grid_map', 'map'),
         ],
+        parameters = [
+            {"Grid/MaxObstacleHeight": "2.0"},
+        ],
         output='screen',
         )
-    
+
     base_teleop_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([stretch_navigation_path, '/launch/teleop_twist.launch.py']),
         launch_arguments={'teleop_type': LaunchConfiguration('teleop_type')}.items())
-    
+
     rviz_launch = Node(package='rviz2', executable='rviz2',
         output='log',
         condition=IfCondition(LaunchConfiguration('use_rviz')),
@@ -57,5 +60,6 @@ def generate_launch_description():
         d435i_launch,
         rtabmap_mapping_node,
         base_teleop_launch,
-        rviz_launch,
+        # Do not launch rviz if running without a GUI
+        # rviz_launch,
     ])
