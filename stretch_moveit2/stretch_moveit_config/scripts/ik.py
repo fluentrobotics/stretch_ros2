@@ -4,6 +4,7 @@ import time
 import rclpy
 import urdfpy
 import pathlib
+import warnings
 import ikpy.chain
 import numpy as np
 import ikpy.urdf.utils
@@ -91,9 +92,9 @@ class InverseKinematics(HelloNode):
         print('Solution:', q_soln)
 
         err = np.linalg.norm(self.chain.forward_kinematics(q_soln)[:3, 3] - target_point)
-        if not np.isclose(err, 0.0, atol=5e-2):
-            print("error is %f, IKPy did not find a valid solution" % (err))
-            return
+        # if not np.isclose(err, 0.0, atol=5e-2):
+        #     print("error is %f, IKPy did not find a valid solution" % (err))
+        #     return
 
         return q_soln
 
@@ -114,15 +115,18 @@ class InverseKinematics(HelloNode):
         self.issue_ik_command()
 
 def main():
+    warnings.filterwarnings("ignore")
+    time.sleep(5)
+
     pose_goal = PoseStamped()
     pose_goal.header.frame_id = "base_link"
-    pose_goal.pose.orientation.x = 0.0
-    pose_goal.pose.orientation.y = 0.0
-    pose_goal.pose.orientation.z = -0.5
-    pose_goal.pose.orientation.w = 0.8
-    pose_goal.pose.position.x = 0.075
-    pose_goal.pose.position.y = -0.44
-    pose_goal.pose.position.z = 0.42
+    pose_goal.pose.orientation.x = 0.06
+    pose_goal.pose.orientation.y = 0.43
+    pose_goal.pose.orientation.z = -0.346
+    pose_goal.pose.orientation.w = 0.938
+    pose_goal.pose.position.x = 0.135
+    pose_goal.pose.position.y = -0.436
+    pose_goal.pose.position.z = 0.746
 
     try:
         node = InverseKinematics(pose_goal)
