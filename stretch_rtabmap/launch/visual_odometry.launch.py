@@ -10,11 +10,11 @@ from ament_index_python.packages import get_package_share_directory
 def generate_launch_description():
     stretch_core_path = get_package_share_directory('stretch_core')
     stretch_rtabmap_path = get_package_share_directory('stretch_rtabmap')
-    
+
     rviz_param = DeclareLaunchArgument('use_rviz', default_value='true', choices=['true', 'false'])
     rviz_config = DeclareLaunchArgument('rviz_config',
                                         default_value=stretch_rtabmap_path + '/' + 'rviz/rtabmap.rviz')
-     
+
     stretch_driver_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([stretch_core_path, '/launch/stretch_driver.launch.py']),
         launch_arguments={'mode': 'navigation'}.items())
@@ -33,7 +33,7 @@ def generate_launch_description():
         ],
         output='screen',
         )
-    
+
     rviz_launch = Node(package='rviz2', executable='rviz2',
         output='log',
         condition=IfCondition(LaunchConfiguration('use_rviz')),
@@ -47,5 +47,6 @@ def generate_launch_description():
         stretch_driver_launch,
         d435i_launch,
         rtabmap_mapping_node,
-        rviz_launch,
+        # Do not launch rviz if running without a GUI
+        # rviz_launch,
     ])
