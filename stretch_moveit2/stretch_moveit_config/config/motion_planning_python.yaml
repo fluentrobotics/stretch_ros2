@@ -143,7 +143,7 @@ ompl:
       dense_delta_fraction: 0.001  # delta fraction for interface detection. default: 0.001
       max_failures: 5000  # maximum consecutive failure limit. default: 5000
   stretch_arm:
-    default_planner_config: RRTConnect
+    default_planner_config: RRTstar
     planner_configs:
       - AnytimePathShortening
       - SBL
