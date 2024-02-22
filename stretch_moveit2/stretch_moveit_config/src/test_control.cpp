@@ -19,6 +19,9 @@ int main(int argc, char** argv)
 {
     // Initialize ROS and create the Node
     rclcpp::init(argc, argv);
+    int counter;
+    int num_sample = 100;
+    double min_height = 1.0;
     // rclcpp::NodeOptions node_options.automatically_declare_parameters_from_overrides(true);
     // rclcpp::Node::SharedPtr node = rclcpp::Node::make_shared("robot_arm_controller");
     rclcpp::NodeOptions node_options = rclcpp::NodeOptions().allow_undeclared_parameters(true);
@@ -43,23 +46,25 @@ int main(int argc, char** argv)
     // static const std::string PLANNING_GROUP_BASE_ARM = "mobile_base_arm";
     static const std::string PLANNING_GROUP_BASE_ARM = "stretch_arm";
     // static const std::string eef_link = "link_grasp_center";
-    static const std::string eef_link = "link_wrist_yaw";
+    static const std::string eef_link = "link_wrist_roll";
     // moveit::planning_interface::MoveGroupInterface move_group_base_arm(test_control_node, PLANNING_GROUP_BASE_ARM, nullptr, rclcpp::Duration::from_seconds(-1));
     moveit::planning_interface::MoveGroupInterface move_group_base_arm(test_control_node, PLANNING_GROUP_BASE_ARM);
     auto robot_model = move_group_base_arm.getRobotModel();
     RCLCPP_INFO(LOGGER, "End effector link: %s", move_group_base_arm.getEndEffectorLink().c_str());
+    moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
 
     move_group_base_arm.setMaxVelocityScalingFactor(1.0);
     move_group_base_arm.setMaxAccelerationScalingFactor(1.0);
     move_group_base_arm.setEndEffectorLink(eef_link);
     move_group_base_arm.setStartStateToCurrentState();
     move_group_base_arm.setPlanningTime(5);
-    move_group_base_arm.setNumPlanningAttempts(500);
+    move_group_base_arm.setNumPlanningAttempts(2000);
     move_group_base_arm.allowReplanning(true);
     move_group_base_arm.setReplanAttempts(10);
     // move_group_base_arm.setGoalTolerance(0.01);
     move_group_base_arm.setGoalPositionTolerance(0.05);
     move_group_base_arm.setGoalOrientationTolerance(0.1);
+    // move_group_base_arm.setPlannerId("geometric::RRTstar");
 
     // // Get Interface Description
     // moveit_msgs::msg::PlannerInterfaceDescription desc;
@@ -81,6 +86,7 @@ int main(int argc, char** argv)
 
     RCLCPP_INFO(LOGGER, "Planning frame: %s", move_group_base_arm.getPlanningFrame().c_str());
     RCLCPP_INFO(LOGGER, "End effector link: %s", move_group_base_arm.getEndEffectorLink().c_str());
+    // RCLCPP_INFO(LOGGER, "Current planner id: %s", move_group_base_arm.getPlannerId().c_str());
 
     auto solver_data = joint_model_group->getGroupKinematics();
     moveit::core::JointModelGroup::KinematicsSolver solver = solver_data.first;
@@ -118,40 +124,71 @@ int main(int argc, char** argv)
     //     RCLCPP_WARN(LOGGER, "Target joint position(s) were outside of limits, but we will plan and clamp to the limits ");
     // }
 
-    // Get current end-effector pose
-    geometry_msgs::msg::PoseStamped eef_pose = move_group_base_arm.getCurrentPose(eef_link);
-    RCLCPP_INFO(LOGGER, "PoseStamped:\n"
-                "Header:\n"
-                "  Frame ID: %s\n"
-                "  Timestamp: %d\n"
-                "Pose:\n"
-                "  Position:\n"
-                "    x: %.2f\n"
-                "    y: %.2f\n"
-                "    z: %.2f\n"
-                "  Orientation:\n"
-                "    x: %.2f\n"
-                "    y: %.2f\n"
-                "    z: %.2f\n"
-                "    w: %.2f",
-                eef_pose.header.frame_id.c_str(),
-                eef_pose.header.stamp.sec,
-                eef_pose.pose.position.x, eef_pose.pose.position.y, eef_pose.pose.position.z,
-                eef_pose.pose.orientation.x, eef_pose.pose.orientation.y,
-                eef_pose.pose.orientation.z, eef_pose.pose.orientation.w);
+    // // Get current end-effector pose
+    // geometry_msgs::msg::PoseStamped eef_pose = move_group_base_arm.getCurrentPose(eef_link);
+    // RCLCPP_INFO(LOGGER, "PoseStamped:\n"
+    //             "Header:\n"
+    //             "  Frame ID: %s\n"
+    //             "  Timestamp: %d\n"
+    //             "Pose:\n"
+    //             "  Position:\n"
+    //             "    x: %.2f\n"
+    //             "    y: %.2f\n"
+    //             "    z: %.2f\n"
+    //             "  Orientation:\n"
+    //             "    x: %.2f\n"
+    //             "    y: %.2f\n"
+    //             "    z: %.2f\n"
+    //             "    w: %.2f",
+    //             eef_pose.header.frame_id.c_str(),
+    //             eef_pose.header.stamp.sec,
+    //             eef_pose.pose.position.x, eef_pose.pose.position.y, eef_pose.pose.position.z,
+    //             eef_pose.pose.orientation.x, eef_pose.pose.orientation.y,
+    //             eef_pose.pose.orientation.z, eef_pose.pose.orientation.w);
+
+    // Get success rate
+    for (int i = 0; i < num_sample; i++){
+        geometry_msgs::msg::PoseStamped random_pose = move_group_base_arm.getRandomPose(eef_link);
+
+        while (random_pose.pose.position.z < min_height) {
+            random_pose = move_group_base_arm.getRandomPose(eef_link);
+        }
+
+        geometry_msgs::msg::Pose target_pose;
+        target_pose.orientation.x = random_pose.pose.orientation.x;
+        target_pose.orientation.y = random_pose.pose.orientation.y;
+        target_pose.orientation.z = random_pose.pose.orientation.z;
+        target_pose.orientation.w = random_pose.pose.orientation.w;
+        target_pose.position.x = random_pose.pose.position.x;
+        target_pose.position.y = random_pose.pose.position.y;
+        target_pose.position.z = random_pose.pose.position.z;
+
+        bool success = move_group_base_arm.setApproximateJointValueTarget(target_pose, eef_link);
+        if (success)
+        {
+            moveit::planning_interface::MoveGroupInterface::Plan my_plan;
+            bool planning_success = (move_group_base_arm.plan(my_plan) == moveit::core::MoveItErrorCode::SUCCESS);
+
+            if (planning_success) {
+                counter++;
+            }
+        }
+    }
+    RCLCPP_ERROR(LOGGER, "Success rate: %d/100", counter);
+
 
     // Get random end-effector pose
     geometry_msgs::msg::PoseStamped random_pose = move_group_base_arm.getRandomPose(eef_link);
 
     // Planning to a Pose goal
     geometry_msgs::msg::Pose target_pose;
-    target_pose.orientation.x = eef_pose.pose.orientation.x;
-    target_pose.orientation.y = eef_pose.pose.orientation.y;
-    target_pose.orientation.z = eef_pose.pose.orientation.z;
-    target_pose.orientation.w = eef_pose.pose.orientation.w;
-    target_pose.position.x = eef_pose.pose.position.x;
-    target_pose.position.y = eef_pose.pose.position.y;
-    target_pose.position.z = eef_pose.pose.position.z - 0.2;
+    target_pose.orientation.x = random_pose.pose.orientation.x;
+    target_pose.orientation.y = random_pose.pose.orientation.y;
+    target_pose.orientation.z = random_pose.pose.orientation.z;
+    target_pose.orientation.w = random_pose.pose.orientation.w;
+    target_pose.position.x = random_pose.pose.position.x;
+    target_pose.position.y = random_pose.pose.position.y;
+    target_pose.position.z = random_pose.pose.position.z;
     // bool success = move_group_base_arm.setPoseTarget(target_pose, eef_link);
     // bool success = move_group_base_arm.setJointValueTarget(target_pose, eef_link);
     bool success = move_group_base_arm.setApproximateJointValueTarget(target_pose, eef_link);
@@ -161,11 +198,11 @@ int main(int argc, char** argv)
     {
         moveit::planning_interface::MoveGroupInterface::Plan my_plan;
         bool planning_success = (move_group_base_arm.plan(my_plan) == moveit::core::MoveItErrorCode::SUCCESS);
-        RCLCPP_INFO(LOGGER, "Plan %s", planning_success ? "" : "FAILED");
+        // RCLCPP_INFO(LOGGER, "Plan %s", planning_success ? "SUCCESSED" : "FAILED");
 
         if (planning_success) {
             // Execute the plan
-            move_group_base_arm.move();
+            // move_group_base_arm.move();
         } 
         else {
             RCLCPP_ERROR(LOGGER, "Failed to plan");
