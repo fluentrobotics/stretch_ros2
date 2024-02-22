@@ -88,21 +88,21 @@ def generate_launch_description():
         move_group_configuration,
     ]
 
-    moveit_py_file = DeclareLaunchArgument(
-        "moveit_py_file",
-        default_value="moveit2_planning.py",
-        description="Python API tutorial file name",
-    )
-    ld.add_action(moveit_py_file)
+    # moveit_py_file = DeclareLaunchArgument(
+    #     "moveit_py_file",
+    #     default_value="moveit2_planning.py",
+    #     description="Python API tutorial file name",
+    # )
+    # ld.add_action(moveit_py_file)
 
     moveit_cpp_config = load_yaml("stretch_moveit_config", "config/motion_planning_python.yaml")
-    moveit_py_node = Node(
-        name="moveit_py",
-        package="stretch_moveit_config",
-        executable=LaunchConfiguration("moveit_py_file"),
-        output="both",
-        parameters=[moveit_cpp_config] + move_group_params,
-    )
-    ld.add_action(moveit_py_node)
+    # moveit_py_node = Node(
+    #     name="moveit_py",
+    #     package="stretch_moveit_config",
+    #     executable=LaunchConfiguration("moveit_py_file"),
+    #     output="both",
+    #     parameters=[moveit_cpp_config] + move_group_params,
+    # )
+    # ld.add_action(moveit_py_node)
 
     return ld
