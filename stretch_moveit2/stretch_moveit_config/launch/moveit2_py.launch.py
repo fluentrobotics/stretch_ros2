@@ -1,5 +1,6 @@
-from ament_index_python.packages import get_package_share_path
+import os
 
+from ament_index_python.packages import get_package_share_path, get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.actions import IncludeLaunchDescription
@@ -28,7 +29,7 @@ def generate_launch_description():
     ld.add_action(DeclareLaunchArgument('use_stretch_driver', default_value='true', choices=['true', 'false'],
                                         description='Allow user to launch Stretch Driver separately'))
     ld.add_action(DeclareLaunchArgument('use_rviz', default_value='true', choices=['true', 'false']))
-    ld.add_action(DeclareLaunchArgument('moveit_py_file', default_value='moveit2_planning.py'))
+    # ld.add_action(DeclareLaunchArgument('moveit_py_file', default_value='moveit2_planning.py'))
 
     # Load the URDF, SRDF and other .yaml configuration files
     robot_description_content = Command(['xacro ',
@@ -49,7 +50,7 @@ def generate_launch_description():
         'allow_trajectory_execution': 'true',
         'fake_execution': 'false',
         'info': 'true',
-        'moveit_py_file': LaunchConfiguration('moveit_py_file'),
+        # 'moveit_py_file': LaunchConfiguration('moveit_py_file'),
         'debug': LaunchConfiguration('debug'),
         'pipeline': LaunchConfiguration('pipeline'),
         'robot_description': robot_description_content,
@@ -66,6 +67,13 @@ def generate_launch_description():
     ld.add_action(move_group_launch)
     ld.add_action(moveit2_py_node_launch)
 
+    # Run camera
+    realsense_launch = IncludeLaunchDescription(
+          PythonLaunchDescriptionSource([os.path.join(
+               get_package_share_directory('stretch_core'), 'launch'),
+               '/d435i_low_resolution.launch.py'])
+          )
+    ld.add_action(realsense_launch)
 
     # Run Rviz and load the default config to see the state of the move_group node
     moveit_rviz_launch_py = PythonLaunchDescriptionSource(
