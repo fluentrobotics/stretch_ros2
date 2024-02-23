@@ -28,7 +28,9 @@ def generate_launch_description():
     rtabmap_mapping_node = Node(
         package='rtabmap_slam',
         executable='rtabmap',
-        arguments=['-d'],
+        # The `--delete_db_on_start` argument clears the existing rtabmap
+        # database to start a fresh mapping session.
+        arguments=['--delete_db_on_start'],
         remappings=[
             ('rgb/image', '/camera/color/image_raw'),
             ('depth/image', '/camera/aligned_depth_to_color/image_raw'),
