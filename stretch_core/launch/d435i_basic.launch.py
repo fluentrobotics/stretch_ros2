@@ -27,7 +27,8 @@ configurable_parameters = [{'name': 'camera_namespace',             'default': '
                            {'name': 'infra_rgb',                    'default': 'false', 'description': 'enable infra2 stream'},
                            {'name': 'enable_confidence',            'default': 'false', 'description': 'enable depth stream'},
                            {'name': 'gyro_fps',                     'default': '200', 'description': "''"},
-                           {'name': 'accel_fps',                    'default': '63', 'description': "''"},
+                           # TODO(fluent): default value of 63 causes the driver to complain; the error message resets the value to 100
+                           {'name': 'accel_fps',                    'default': '100', 'description': "''"},
                            {'name': 'enable_gyro',                  'default': 'true', 'description': "''"},
                            {'name': 'enable_accel',                 'default': 'true', 'description': "''"},
                            {'name': 'pointcloud.enable',            'default': 'true', 'description': ''},
@@ -56,7 +57,7 @@ def generate_launch_description():
      d435i_accel_correction = Node(
           package='stretch_core',
           executable='d435i_accel_correction',
-          output='screen',
+          output='log',
           )
 
      return LaunchDescription(declare_configurable_parameters(configurable_parameters) + [
