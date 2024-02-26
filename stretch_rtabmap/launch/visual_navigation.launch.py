@@ -18,14 +18,18 @@ def generate_launch_description():
     rviz_param = DeclareLaunchArgument('use_rviz', default_value='true', choices=['true', 'false'])
     rviz_config = DeclareLaunchArgument('rviz_config',
                                         default_value=stretch_rtabmap_path + '/' + 'rviz/rtabmap_nav.rviz')
-     
+
+    # NOTE: Both stretch_driver and rtabmap might be publishing the
+    # odom->baselink transform. This might result in the robot "teleporting"
+    # between two locations.
     stretch_driver_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([stretch_core_path, '/launch/stretch_driver.launch.py']),
-        launch_arguments={'mode': 'navigation', 'broadcast_odom_tf': 'True'}.items())
+        launch_arguments={'mode': 'navigation', 'broadcast_odom_tf': 'True'}.items()
+    )
 
     d435i_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([stretch_core_path, '/launch/d435i_high_resolution.launch.py']))
-    
+
     rplidar_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([stretch_core_path, '/launch/rplidar.launch.py']))
 
@@ -38,6 +42,8 @@ def generate_launch_description():
             ('rgb/camera_info', '/camera/color/camera_info'),
             ('grid_map', 'map')
         ],
+        # Mem/IncrementalMemory controls whether the node runs in SLAM or localization mode:
+        # https://github.com/introlab/rtabmap/blob/a11ea29/corelib/include/rtabmap/core/Parameters.h#L212
         parameters=[{'Mem/IncrementalMemory': 'false'}],
         output='screen',
         )
@@ -46,15 +52,15 @@ def generate_launch_description():
         'params_file',
         default_value=os.path.join(stretch_navigation_path, 'config', 'nav2_params.yaml'),
         description='Full path to the ROS2 parameters file to use for all launched nodes')
-    
+
     nav2_launch = IncludeLaunchDescription(
             PythonLaunchDescriptionSource(os.path.join(stretch_navigation_path, 'launch', 'navigation_launch.py')),
             launch_arguments={'params_file': LaunchConfiguration('params_file')}.items())
-    
+
     base_teleop_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([stretch_navigation_path, '/launch/teleop_twist.launch.py']),
         launch_arguments={'teleop_type': LaunchConfiguration('teleop_type')}.items())
-    
+
     rviz_launch = Node(package='rviz2', executable='rviz2',
         output='log',
         condition=IfCondition(LaunchConfiguration('use_rviz')),
@@ -73,5 +79,6 @@ def generate_launch_description():
         params_file_param,
         nav2_launch,
         base_teleop_launch,
-        rviz_launch,
+        # Do not launch rviz if running without a GUI
+        # rviz_launch,
     ])
