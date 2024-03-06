@@ -44,6 +44,14 @@ def generate_launch_description():
     )
     ld.add_action(stretch_driver_launch)
 
+    # Run camera
+    realsense_launch = IncludeLaunchDescription(
+          PythonLaunchDescriptionSource([os.path.join(
+               get_package_share_directory('stretch_core'), 'launch'),
+               '/d435i_low_resolution.launch.py'])
+          )
+    ld.add_action(realsense_launch)
+
     # Run the main MoveIt executable
     moveit2_py_node_launch_py = PythonLaunchDescriptionSource(str(moveit_config_path / 'launch/moveit2_py_node.launch.py'))
     moveit2_py_node_launch_args = {
@@ -66,14 +74,6 @@ def generate_launch_description():
                                                  launch_arguments=moveit2_py_node_launch_args.items())
     ld.add_action(move_group_launch)
     ld.add_action(moveit2_py_node_launch)
-
-    # Run camera
-    realsense_launch = IncludeLaunchDescription(
-          PythonLaunchDescriptionSource([os.path.join(
-               get_package_share_directory('stretch_core'), 'launch'),
-               '/d435i_low_resolution.launch.py'])
-          )
-    ld.add_action(realsense_launch)
 
     # Run Rviz and load the default config to see the state of the move_group node
     moveit_rviz_launch_py = PythonLaunchDescriptionSource(
