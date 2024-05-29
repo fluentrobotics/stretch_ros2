@@ -45,7 +45,7 @@ class StretchDriver(Node):
         self.use_robotis_head = True
         self.use_robotis_end_of_arm = True
 
-        self.default_goal_timeout_s = 10.0
+        self.default_goal_timeout_s = 20.0
         self.default_goal_timeout_duration = Duration(seconds=self.default_goal_timeout_s)
 
         # Initialize calibration offsets
