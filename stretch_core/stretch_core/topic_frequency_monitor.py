@@ -167,4 +167,7 @@ class TopicFrequencyNode(Node):
 if __name__ == "__main__":
     rclpy.init(args=sys.argv)
     node = TopicFrequencyNode()
-    rclpy.spin(node)
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
