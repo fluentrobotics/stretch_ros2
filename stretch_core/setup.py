@@ -24,6 +24,13 @@ setup(
     entry_points={
         'console_scripts': [
             'stretch_driver = stretch_core.stretch_driver:main',
+<<<<<<< HEAD
+||||||| parent of c495acf (Modified stretch driver node to accepet and execute velcoity commands in navigation mode)
+            'grasp = stretch_core.grasp:main',
+=======
+            'stretch_wbc_driver = stretch_core.stretch_wbc_driver:main',
+            'grasp = stretch_core.grasp:main',
+>>>>>>> c495acf (Modified stretch driver node to accepet and execute velcoity commands in navigation mode)
             'detect_aruco_markers = stretch_core.detect_aruco_markers:main',
             'd435i_accel_correction = stretch_core.d435i_accel_correction:main',
             'keyboard_teleop = stretch_core.keyboard_teleop:main',

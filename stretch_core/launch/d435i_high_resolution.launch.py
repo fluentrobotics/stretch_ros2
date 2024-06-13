@@ -15,7 +15,7 @@ configurable_parameters = [{'name': 'depth_module.profile',         'default': '
                            {'name': 'align_depth.enable',           'default': 'true',        'description': 'whether to publish aligned_depth_to_color feed'},
                            {'name': 'device_type',                  'default': 'd435', 'description': "''"}
                            ]
-                           
+
 def declare_configurable_parameters(parameters):
     return [DeclareLaunchArgument(param['name'], default_value=param['default'], description=param['description']) for param in parameters]
 
