@@ -80,7 +80,7 @@ class StretchWBCDriver(Node):
         self.ros_setup()
 
     #### CALLBACK FOR THE OTHER JOINTS IN NAVIAGTION MODE ONLY#################
-        
+
     def set_lift_velocity_callback(self, lift_msg):
         self.robot_mode_rwlock.acquire_read()
         if self.robot_mode != 'navigation':
@@ -89,12 +89,12 @@ class StretchWBCDriver(Node):
                                     'Current mode = {1}.'.format(self.node_name, self.robot_mode))
             self.robot_mode_rwlock.release_read()
             return
-        
+
         lift_twist = lift_msg.twist
         self.lift_linear_velocity_mps = lift_twist.linear.x
         self.last_lift_twist_time = self.get_clock().now()
         self.robot_mode_rwlock.release_read()
-        
+
     def set_arm_velocity_callback(self, arm_msg):
         self.robot_mode_rwlock.acquire_read()
         if self.robot_mode != 'navigation':
@@ -103,12 +103,12 @@ class StretchWBCDriver(Node):
                                     'Current mode = {1}.'.format(self.node_name, self.robot_mode))
             self.robot_mode_rwlock.release_read()
             return
-        
+
         arm_twist = arm_msg.twist
         self.arm_linear_velocity_mps = arm_twist.linear.x
         self.last_arm_twist_time = self.get_clock().now()
         self.robot_mode_rwlock.release_read()
-        
+
     def set_wrist_velocity_callback(self, wrist_msg):
         self.robot_mode_rwlock.acquire_read()
         if self.robot_mode != 'navigation':
@@ -117,13 +117,13 @@ class StretchWBCDriver(Node):
                                     'Current mode = {1}.'.format(self.node_name, self.robot_mode))
             self.robot_mode_rwlock.release_read()
             return
-        
+
         wrist_twist = wrist_msg.twist
         self.wrist_angualr_velocity_radps = wrist_twist.angular.z
         self.last_wrist_twist_time = self.get_clock().now()
         self.robot_mode_rwlock.release_read()
-        
-        
+
+
     # MOBILE BASE VELOCITY METHODS ############
 
     def set_mobile_base_velocity_callback(self, base_msg):
@@ -134,7 +134,7 @@ class StretchWBCDriver(Node):
                                     'Current mode = {1}.'.format(self.node_name, self.robot_mode))
             self.robot_mode_rwlock.release_read()
             return
-        
+
         base_twist = base_msg.twist
         self.base_linear_velocity_mps = base_twist.linear.x
         self.base_angular_velocity_radps = base_twist.angular.z
@@ -153,11 +153,11 @@ class StretchWBCDriver(Node):
         if self.robot_mode == 'navigation':
             time_now = self.get_clock().now()
             time_since_last_base_cmd = time_now - self.last_base_twist_time
-            
+
             time_since_last_lift_cmd = time_now - self.last_lift_twist_time
             time_since_last_arm_cmd = time_now - self.last_arm_twist_time
             time_since_last_wrist_cmd = time_now - self.last_wrist_twist_time
-            
+
             # setting velocity cmd to the base
             if time_since_last_base_cmd < self.timeout:
                 # self.get_logger().info(f'Received base_cmd_vel message within timeout, setting desired base velocity {self.base_linear_velocity_mps} m/s, {self.base_angular_velocity_radps} rad/s')
@@ -167,28 +167,28 @@ class StretchWBCDriver(Node):
                 # Too much information in general, although it could be blocked, since it's just INFO.
                 # self.get_logger().info('Received base_cmd_vel message outside of timeout')
                 self.robot.base.set_velocity(0.0, 0.0)
-               
-            # setting velocity cmd to the lift 
+
+            # setting velocity cmd to the lift
             if time_since_last_lift_cmd < self.timeout:
                 # self.get_logger().info(f'Received cmd_vel message within timeout, setting desired lift velocity {self.lift_linear_velocity_mps} m/s')
                 self.robot.lift.set_velocity(self.lift_linear_velocity_mps)
             else:
                 self.robot.lift.set_velocity(0.0)
-                
+
             # setting velocity cmd to the arm
             if time_since_last_arm_cmd < self.timeout:
                 # self.get_logger().info(f'Received cmd_vel message within timeout, setting desired lift velocity {self.lift_linear_velocity_mps} m/s')
                 self.robot.arm.set_velocity(self.arm_linear_velocity_mps)
             else:
                 self.robot.arm.set_velocity(0.0)
-            
+
             # setting velocity cmd to the wrist
             if time_since_last_wrist_cmd < self.timeout:
                 # self.get_logger().info(f'Received cmd_vel message within timeout, setting desired lift velocity {self.lift_linear_velocity_mps} m/s')
                 self.robot.end_of_arm.get_joint('wrist_yaw').set_velocity(self.wrist_angualr_velocity_radps)
             else:
                 self.robot.end_of_arm.get_joint('wrist_yaw').set_velocity(0.0)
-                
+
 
         # get copy of the current robot status (uses lock held by the robot)
         robot_status = self.robot.get_status()
@@ -237,11 +237,11 @@ class StretchWBCDriver(Node):
             wrist_yaw_rad = wrist_yaw_status['pos']
             wrist_yaw_vel = wrist_yaw_status['vel']
             wrist_yaw_effort = wrist_yaw_status['effort']
-            
+
             dex_wrist_attached = False
             if 'wrist_pitch' in robot_status['end_of_arm']:
                 dex_wrist_attached = True
-            
+
             if dex_wrist_attached:
                 wrist_pitch_status = robot_status['end_of_arm']['wrist_pitch']
                 wrist_pitch_rad = wrist_pitch_status['pos']
@@ -394,7 +394,7 @@ class StretchWBCDriver(Node):
         elif pimu_hardware_id == 1 or pimu_hardware_id == 2:
             battery_state.present = robot_status['pimu']['charger_connected']
         self.power_pub.publish(battery_state)
-        
+
         ##################################################
         # publish homed status
         homed_status = Bool()
@@ -463,7 +463,7 @@ class StretchWBCDriver(Node):
                 end_of_arm_joint_names = ['joint_wrist_yaw', 'joint_wrist_pitch', 'joint_wrist_roll', 'joint_gripper_finger_left', 'joint_gripper_finger_right']
             else:
                 end_of_arm_joint_names = ['joint_wrist_yaw', 'joint_gripper_finger_left', 'joint_gripper_finger_right']
-            
+
             joint_state.name.extend(end_of_arm_joint_names)
 
             positions.append(wrist_yaw_rad)
@@ -486,7 +486,7 @@ class StretchWBCDriver(Node):
             positions.append(gripper_finger_rad)
             velocities.append(gripper_finger_vel)
             efforts.append(gripper_finger_effort)
-            
+
         # # Add base velocities to the JointState message
         # joint_state.name.extend(['base_x', 'base_y', 'base_theta'])
         # positions.extend([x, y, theta])  # Positions are not applicable for velocities
@@ -568,7 +568,7 @@ class StretchWBCDriver(Node):
     def change_mode(self, new_mode, code_to_run = None):
         self.robot_mode_rwlock.acquire_write()
         self.robot_mode = new_mode
-        
+
         if code_to_run:
             code_to_run()
 
@@ -584,12 +584,12 @@ class StretchWBCDriver(Node):
         def code_to_run():
             self.base_linear_velocity_mps = 0.0
             self.base_angular_velocity_radps = 0.0
-            
+
             # for other joints
             self.lift_linear_velocity_mps = 0.0
             self.arm_linear_velocity_mps = 0.0
             self.wrist_angualr_velocity_radps = 0.0
-            
+
         self.change_mode('navigation', code_to_run)
         return True, 'Now in navigation mode.'
 
@@ -686,7 +686,7 @@ class StretchWBCDriver(Node):
         response.success = True
         response.message = 'is_runstopped: {0}'.format(request.data)
         return response
-    
+
     def home_the_robot(self):
         self.robot_mode_rwlock.acquire_read()
         can_home = self.robot_mode in self.control_modes
@@ -702,7 +702,7 @@ class StretchWBCDriver(Node):
         self.robot.home()
         self.change_mode(last_robot_mode, code_to_run)
         return True, 'Homed.'
-    
+
     def stow_the_robot(self):
         self.robot_mode_rwlock.acquire_read()
         can_stow = self.robot_mode in self.control_modes
@@ -756,12 +756,12 @@ class StretchWBCDriver(Node):
         self.get_logger().info("For use with S T R E T C H (TM) RESEARCH EDITION from Hello Robot Inc.")
 
         self.get_logger().info("{0} started".format(self.node_name))
-        
+
         if int(stretch_body.__version__.split('.')[1]) < 5:
             self.get_logger().fatal("ERROR: Found old stretch_body version. Please upgrade stretch_body to v0.5.0 or above.")
             rclpy.shutdown()
             exit()
-        
+
         self.robot = rb.Robot()
         #Handle the non_dxl status in local loop, not thread
         if not self.robot.startup(start_non_dxl_thread=False,
@@ -847,7 +847,7 @@ class StretchWBCDriver(Node):
 
         self.base_linear_velocity_mps = 0.0  # m/s ROS SI standard for cmd_vel (REP 103)
         self.base_angular_velocity_radps = 0.0  # rad/s ROS SI standard for cmd_vel (REP 103)
-        
+
         self.lift_linear_velocity_mps = 0.0
         self.arm_linear_velocity_mps = 0.0
         self.wrist_angualr_velocity_radps = 0.0
@@ -867,13 +867,13 @@ class StretchWBCDriver(Node):
         self.runstop_event_pub = self.create_publisher(Bool, 'is_runstopped', 1)
 
         self.group = MutuallyExclusiveCallbackGroup()
-        self.create_subscription(TwistStamped, "base_cmd_vel", self.set_mobile_base_velocity_callback, 1, callback_group=self.group)
-        
-        # Subscripits for other joint cmd velocities
-        self.create_subscription(TwistStamped, "lift_cmd_vel", self.set_lift_velocity_callback, 1, callback_group=self.group)
-        self.create_subscription(TwistStamped, "arm_cmd_vel", self.set_arm_velocity_callback, 1, callback_group=self.group)
-        self.create_subscription(TwistStamped, "wrist_cmd_vel", self.set_wrist_velocity_callback, 1, callback_group=self.group)
-        
+        self.create_subscription(TwistStamped, "base_cmd_vel", self.set_mobile_base_velocity_callback, 10, callback_group=self.group)
+
+        # Subscriptions for other joint cmd velocities
+        self.create_subscription(TwistStamped, "lift_cmd_vel", self.set_lift_velocity_callback, 10, callback_group=self.group)
+        self.create_subscription(TwistStamped, "arm_cmd_vel", self.set_arm_velocity_callback, 10, callback_group=self.group)
+        self.create_subscription(TwistStamped, "wrist_cmd_vel", self.set_wrist_velocity_callback, 10, callback_group=self.group)
+
 
         self.declare_parameter('rate', 30.0)
         self.joint_state_rate = self.get_parameter('rate').value
@@ -889,7 +889,7 @@ class StretchWBCDriver(Node):
         self.get_logger().info(f"odom_frame_id = {self.odom_frame_id}")
 
         self.joint_state_pub = self.create_publisher(JointState, 'joint_states', 1)
-        
+
         time_now = self.get_clock().now()
         self.last_base_twist_time = time_now
         self.last_lift_twist_time = time_now
@@ -899,7 +899,7 @@ class StretchWBCDriver(Node):
         # start action server for joint trajectories
         self.declare_parameter('fail_out_of_range_goal', False)
         self.fail_out_of_range_goal = self.get_parameter('fail_out_of_range_goal').value
-        
+
         self.declare_parameter('action_server_rate', 30.0)
         self.action_server_rate = self.get_parameter('action_server_rate').value
 
@@ -932,7 +932,7 @@ class StretchWBCDriver(Node):
         self.runstop_service = self.create_service(SetBool,
                                                    '/runstop',
                                                    self.runstop_service_callback)
-        
+
         # start loop to command the mobile base velocity, publish
         # odometry, and publish joint states
         timer_period = 1.0 / self.joint_state_rate
