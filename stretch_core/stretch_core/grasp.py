@@ -167,10 +167,13 @@ class GraspCommand(HelloNode):
             p_R_obj = p_base_link__object
             p_R_EE = p_base_link__link_grasp_center
 
-            return -2.0 * math.atan2(
+            angle = -2.0 * math.atan2(
                 p_R_obj.x - math.sqrt(p_R_obj.x**2 + p_R_obj.y**2 - p_R_EE.y**2),
-                3 * p_R_EE.y - p_R_obj.y
+                p_R_EE.y + p_R_obj.y,
             )
+
+            # normalize angle to be between [-pi, pi]
+            return math.atan2(math.sin(angle), math.cos(angle))
 
         theta_offset = calculate_base_rotation_angle(
             T_base_link__object.translation,
