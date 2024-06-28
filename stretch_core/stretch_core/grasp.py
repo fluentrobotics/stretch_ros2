@@ -273,29 +273,25 @@ class GraspCommand(HelloNode):
     def handover(self) -> bool:
         logger.info("Executing handover...")
 
-        joint_positions_dict: dict[str, float] = {
+        joint_positions_dict: dict[str, float | tuple[float, float]] = {
             "rotate_mobile_base": 3.1415 / 2,  # relative
         }
         self.move_to_pose(joint_positions_dict)
 
-        joint_positions_dict: dict[str, tuple[float, float]] = {
+        joint_positions_dict = {
             "joint_lift": (0.9, self.CUSTOM_JOINT_EFFORT),
-        }
-        self.move_to_pose(joint_positions_dict, custom_contact_thresholds=True)
-
-        joint_positions_dict: dict[str, float] = {
-            "joint_wrist_yaw": self.joint_wrist_yaw_out,
-        }
-        self.move_to_pose(joint_positions_dict)
-
-        joint_positions_dict: dict[str, tuple[float, float]] = {
             "wrist_extension": (0.2, self.CUSTOM_JOINT_EFFORT),
         }
         self.move_to_pose(joint_positions_dict, custom_contact_thresholds=True)
 
+        joint_positions_dict = {
+            "joint_wrist_yaw": self.joint_wrist_yaw_out,
+        }
+        self.move_to_pose(joint_positions_dict)
+
         # Open the gripper
         logger.info("Opening the gripper...")
-        time.sleep(1)
+        time.sleep(0.25)
         self.move_to_pose({"gripper_aperture": self.gripper_open})
 
         logger.success("Completed handover.")
@@ -325,33 +321,16 @@ class GraspCommand(HelloNode):
             if T_link_grasp_center__object is None:
                 continue
 
-            # distance = max(0.0, T_link_grasp_center__object.translation.x - 1)
-            # if distance > 0.02:
-            #     self.move_base_forward(distance)
-            #     continue
-
-            distance = max(0.0, T_link_grasp_center__object.translation.x - 0.12)
-            if distance > 0.02:
-                self.move_base_forward(distance)
-                self.align_end_effector()
-                continue
-
             # The gripper shortens in length as it closes, so we need to add a
             # couple of centimeters to the drive distance to compensate.
             distance = max(0.0, T_link_grasp_center__object.translation.x + 0.02)
-            if distance > 0.2:
-                self.get_logger().error(
-                    f"WTF: {distance} // {T_link_grasp_center__object.translation}"
-                )
-                break
-            else:
-                self.move_base_forward(distance)
+            self.move_base_forward(distance)
 
             self.issue_grasp_command()
             time.sleep(1)
             self.move_base_forward(-0.3)
 
-            while not self.drive_base_link_to_frame("human", 1.5):
+            while not self.drive_base_link_to_frame("human", 1.0):
                 time.sleep(1)
 
             self.handover()
