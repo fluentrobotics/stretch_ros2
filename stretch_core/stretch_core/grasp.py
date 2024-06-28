@@ -114,42 +114,21 @@ class GraspCommand(HelloNode):
             logger.success("Stowed the arm")
         return returncode
 
-    # Move arm to the desired height without stretching arm
-    def lift_arm(self) -> bool:
-        logger.info("Moving the lift...")
+    # Move arm to the pre-grasping position
+    def align_end_effector(self) -> bool:
+        logger.info("Aligning the end effector...")
 
-        T_base_link__object = self.get_latest_tf("base_link", "Pringles")
-        if T_base_link__object is None:
-            return False
-
-        target_lift_height = (
-            T_base_link__object.translation.z
-            - self.LIFT_Z_OFFSET
-            + self.GRIPPER_Z_OFFSET * 0
-        )
-
-        joint_positions_dict: dict[str, tuple[float, float]] = {
-            "joint_lift": (target_lift_height, self.CUSTOM_JOINT_EFFORT),
+        # Reset end effector
+        joint_positions_dict: dict[str, float | tuple[float, float]] = {
             "wrist_extension": (0.1, self.CUSTOM_JOINT_EFFORT),
             "joint_wrist_yaw": (self.joint_wrist_yaw_forward, self.CUSTOM_JOINT_EFFORT),
             "joint_wrist_pitch": (0.0, self.CUSTOM_JOINT_EFFORT),
             "joint_wrist_roll": (0.0, self.CUSTOM_JOINT_EFFORT),
             "gripper_aperture": (self.gripper_open, self.CUSTOM_JOINT_EFFORT),
         }
-        logger.info("\n" + pformat(joint_positions_dict))
-        action_response = self.move_to_pose(
-            joint_positions_dict, custom_contact_thresholds=True
-        )
+        self.move_to_pose(joint_positions_dict, custom_contact_thresholds=True)
 
-        returncode = self.check_follow_joint_trajectory_response(action_response)
-        if returncode:
-            logger.success("Moved the lift")
-        return returncode
-
-    # Move arm to the pre-grasping position
-    def align_end_effector(self) -> bool:
-        logger.info("Aligning the end effector...")
-
+        # Align end effector
         T_base_link__link_grasp_center = self.get_latest_tf(
             "base_link", "link_grasp_center"
         )
@@ -175,16 +154,18 @@ class GraspCommand(HelloNode):
             # normalize angle to be between [-pi, pi]
             return math.atan2(math.sin(angle), math.cos(angle))
 
+        target_lift_height = T_base_link__object.translation.z - self.LIFT_Z_OFFSET
         theta_offset = calculate_base_rotation_angle(
             T_base_link__object.translation,
-            T_base_link__link_grasp_center.translation
+            T_base_link__link_grasp_center.translation,
         )
-        joint_positions_dict: dict[str, float] = {
-            "rotate_mobile_base": theta_offset,  # relative
+        joint_positions_dict = {
+            "joint_lift": (target_lift_height, self.CUSTOM_JOINT_EFFORT),
+            "rotate_mobile_base": (theta_offset, 0.0),  # effort is not used
         }
         logger.info("\n" + pformat(joint_positions_dict))
         action_response = self.move_to_pose(
-            joint_positions_dict, custom_contact_thresholds=False
+            joint_positions_dict, custom_contact_thresholds=True
         )
 
         returncode = self.check_follow_joint_trajectory_response(action_response)
@@ -309,9 +290,6 @@ class GraspCommand(HelloNode):
             continue
 
         while True:
-            if not self.lift_arm():
-                continue
-
             if not self.align_end_effector():
                 continue
 
