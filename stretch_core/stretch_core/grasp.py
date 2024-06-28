@@ -229,12 +229,11 @@ class GraspCommand(HelloNode):
             return False
         logger.debug("New relative pose\n" + pformat(T_base_link__target.translation))
 
-        # Drive forward
-        distance_offset = max(
-            0.0, T_base_link__target.translation.x - stopping_distance
+        # Drive forward/backward
+        distance_offset = T_base_link__target.translation.x - stopping_distance
+        returncode = (abs(distance_offset) < 0.01) or self.move_base_forward(
+            distance_offset
         )
-
-        returncode = (distance_offset == 0.0) or self.move_base_forward(distance_offset)
         if returncode:
             logger.success(f"Drove base_link to {target_frame}")
         return returncode
