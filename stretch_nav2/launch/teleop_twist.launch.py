@@ -56,7 +56,7 @@ def generate_launch_description():
             'axis_linear.x': 4, # Right stick vertical axis
             'axis_angular.yaw': 3, # Right stick horizontal axis
             'scale_linear.x': LaunchConfiguration('linear'),
-            'scale_angular': LaunchConfiguration('angular'),
+            'scale_angular.yaw': LaunchConfiguration('angular'),
         }
     ]
 
