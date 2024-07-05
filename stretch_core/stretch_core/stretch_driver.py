@@ -120,6 +120,9 @@ class StretchDriver(Node):
         # Or a Joy message type could also be published which can be used for controlling robot with an remote gamepad.
         # The Joy message should follow the format described in gamepad_conversion.py 
         if self.robot_mode == 'gamepad':
+            # This function has to be called repeatedly to work in gamepad mode.
+            self.disable_wrist_motor_torques(quiet=True)
+
             time_since_last_joy = self.get_clock().now() - self.last_gamepad_joy_time
             if time_since_last_joy < self.timeout:
                 self.gamepad_teleop.do_motion(unpack_joy_to_gamepad_state(self.received_gamepad_joy_msg),robot=self.robot)
@@ -531,6 +534,13 @@ class StretchDriver(Node):
 
     # TODO : add a freewheel mode or something comparable for the mobile base?
 
+    def disable_wrist_motor_torques(self, quiet: bool = False) -> None:
+        if not quiet:
+            self.get_logger().warn("Disabling wrist motor torques")
+        for motor_name, motor_obj in self.robot.end_of_arm.motors.items():
+            if motor_name.startswith("wrist"):
+                motor_obj.disable_torque()
+
     def turn_on_navigation_mode(self):
         # Navigation mode enables mobile base velocity control via
         # cmd_vel, and disables position-based control of the mobile
@@ -538,6 +548,8 @@ class StretchDriver(Node):
         def code_to_run():
             self.linear_velocity_mps = 0.0
             self.angular_velocity_radps = 0.0
+            self.disable_wrist_motor_torques()
+
         self.change_mode('navigation', code_to_run)
         return True, 'Now in navigation mode.'
 
