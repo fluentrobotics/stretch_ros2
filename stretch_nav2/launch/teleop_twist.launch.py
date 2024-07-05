@@ -7,8 +7,8 @@ from launch.conditions import LaunchConfigurationEquals
 from launch.substitutions import LaunchConfiguration, PythonExpression, TextSubstitution
 
 configurable_parameters = [{'name': 'teleop_type',   'default': "joystick",                'description': "how to teleop ('keyboard', 'joystick' or 'none')"},
-                           {'name': 'linear',        'default': "0.5",             'description': "linear speed (m/s)"                                      },
-                           {'name': 'angular',       'default': "0.5",              'description': "angular speed (rad/s)"                                  },
+                           {'name': 'linear',        'default': "0.4",             'description': "linear speed (m/s)"                                      },
+                           {'name': 'angular',       'default': "1.0",              'description': "angular speed (rad/s)"                                  },
                            {'name': 'joystick_port', 'default': "/dev/input/js0",   'description': "joystick USB device name"                               },
                            ]
 
