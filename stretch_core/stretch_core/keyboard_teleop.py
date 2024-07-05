@@ -296,7 +296,7 @@ class KeyboardTeleopNode(Node):
     def send_command(self, command):
         joint_state = self.joint_state
         if (joint_state is not None) and (command is not None):
-            if self.robot_mode == 'position':
+            if self.robot_mode in ["position", "navigation"]:
                 point = JointTrajectoryPoint()
                 duration = Duration(seconds=0.0)
                 point.time_from_start = duration.to_msg()
