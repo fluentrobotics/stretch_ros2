@@ -19,7 +19,7 @@ from rclpy.executors import MultiThreadedExecutor
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.node import Node
 
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import TwistStamped
 from geometry_msgs.msg import TransformStamped
 
 from std_srvs.srv import Trigger
@@ -96,7 +96,7 @@ class StretchDriver(Node):
         
     # MOBILE BASE VELOCITY METHODS ############
 
-    def set_mobile_base_velocity_callback(self, twist):
+    def set_mobile_base_velocity_callback(self, twist: TwistStamped):
         self.robot_mode_rwlock.acquire_read()
         if self.robot_mode != 'navigation':
             self.get_logger().error('{0} action server must be in navigation mode to '
@@ -104,8 +104,8 @@ class StretchDriver(Node):
                                     'Current mode = {1}.'.format(self.node_name, self.robot_mode))
             self.robot_mode_rwlock.release_read()
             return
-        self.linear_velocity_mps = twist.linear.x
-        self.angular_velocity_radps = twist.angular.z
+        self.linear_velocity_mps = twist.twist.linear.x
+        self.angular_velocity_radps = twist.twist.angular.z
         self.last_twist_time = self.get_clock().now()
         self.robot_mode_rwlock.release_read()
 
@@ -899,8 +899,8 @@ class StretchDriver(Node):
         self.gamepad_state_pub = self.create_publisher(Joy,'stretch_gamepad_state', 1) # decode using gamepad_conversion.unpack_joy_to_gamepad_state() on client side
 
         self.group = MutuallyExclusiveCallbackGroup()
-        self.create_subscription(Twist, "cmd_vel", self.set_mobile_base_velocity_callback, 1, callback_group=self.group)
-        
+        self.create_subscription(TwistStamped, "cmd_vel", self.set_mobile_base_velocity_callback, 1, callback_group=self.group)
+
         self.create_subscription(Joy, "gamepad_joy", self.set_gamepad_motion_callback, 1, callback_group=self.group)
 
         self.declare_parameter('rate', 30.0)
